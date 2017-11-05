@@ -188,7 +188,7 @@ function smartLog {
     echo -n "Execute the app and enter the name: "
     read packageName
     ${ADB} shell ps | grep $packageName > /tmp/pids
-    PIDS="$(wc -l /tmp/pids | cut -d" " -f1)"
+    PIDS=$(wc -l /tmp/pids | cut -d" " -f1)
     DATE=$(date +"%Y%m%d%H%M%S")
     FOLDER=$PWD
 
@@ -331,7 +331,7 @@ function getSnapshot {
             return
         else
             echo "Downloading App ..."
-            ${ADB} shell su -c cp -r /data/data/${app} /sdcard/ > /dev/null
+            ${ADB} shell su -c "cp -r /data/data/${app} /sdcard/" > /dev/null
             ${ADB} pull /sdcard/${app} . > /dev/null
             ${ADB} shell rm -rf /sdcard/${app}
             DATE=$(date +"%Y%m%d%H%M%S")
@@ -519,9 +519,9 @@ function frida_lib {
 
     elif [ $opt -eq 7 ]; then
         echo -n "Trying to extract the info from ADB... "
-        arch=$(${ADB} shell "getprop ro.product.cpu.abi" | tr -d '\r')
-        brand=$(${ADB} shell "getprop ro.product.brand" | tr -d '\r')
-        model=$(${ADB} shell "getprop ro.product.model" | tr -d '\r')
+        arch=$(${ADB} shell getprop ro.product.cpu.abi | tr -d '\r')
+        brand=$(${ADB} shell getprop ro.product.brand | tr -d '\r')
+        model=$(${ADB} shell getprop ro.product.model | tr -d '\r')
         echo "${brand} ${model} ${arch}"
     else
         echo -n "Invalid option, press Enter to continue... "
