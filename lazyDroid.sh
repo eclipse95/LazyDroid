@@ -220,7 +220,7 @@ function smartLog {
                     echo -n "Press Enter to continue... "
                     read kk
                     #FIXME: It seems it is not working well..
-                    ${MYSHELL} -e "${ADB} logcat | grep ${PIDD_} | tee -a "${FOLDER}/${packageName}_${DATE}.log"" &
+                    ${MYSHELL} -e "${ADB} logcat | grep ${PIDD_} | tee -a ${FOLDER}/${packageName}_${DATE}.log" &
 
                 fi
             else
@@ -230,7 +230,7 @@ function smartLog {
                 echo -n "Press Enter to continue... "
                 read kk
                 #FIXME: It seems it is not working well..
-                ${MYSHELL} -e "${ADB} logcat | grep ${PIDD_} | tee -a "${FOLDER}/${packageName}_${DATE}.log"" &
+                ${MYSHELL} -e "${ADB} logcat | grep ${PIDD_} | tee -a ${FOLDER}/${packageName}_${DATE}.log" &
 
             fi
             rm /tmp/pids
@@ -331,9 +331,9 @@ function getSnapshot {
             return
         else
             echo "Downloading App ..."
-            ${ADB} shell su -c "cp -r /data/data/${app} /sdcard/" > /dev/null
-            ${ADB} pull "/sdcard/${app}" . > /dev/null
-            ${ADB} shell "rm -rf /sdcard/${app}"
+            ${ADB} shell su -c cp -r /data/data/${app} /sdcard/ > /dev/null
+            ${ADB} pull /sdcard/${app} . > /dev/null
+            ${ADB} shell rm -rf /sdcard/${app}
             DATE=$(date +"%Y%m%d%H%M%S")
             mv ${app} ${app}_${DATE}
 
@@ -351,7 +351,7 @@ function getSnapshot {
         ;;
     2)
         echo -e "\nDownloading /sdcard/..."
-        ${ADB} pull "/sdcard/" . > /dev/null
+        ${ADB} pull /sdcard/ . > /dev/null
         DATE=$(date +"%Y%m%d%H%M%S")
         mv sdcard sdcard_${DATE}
         if [ $? -eq "0" ]
@@ -367,7 +367,7 @@ function getSnapshot {
         read folder
         DATE=$(date +"%Y%m%d%H%M%S")
         #FIXME: It could require root privileges
-        ${ADB} pull "${folder}" . > /tmp/log_${DATE}
+        ${ADB} pull ${folder} . > /tmp/log_${DATE}
         grep "does not exist" /tmp/log_${DATE} > /dev/null
 
         if [ $? ]
@@ -398,14 +398,14 @@ function compare {
 
     echo -n "[0] First folder to compare: "
     read firstf
-    if [ ! -d "${firstf}" ]; then
+    if [ ! -d ${firstf} ]; then
         echo -n "${firstf} Folder not found. Press Enter to continue..."
         read kk
         return
     fi
     echo -n "[1] Second folder to compare: "
     read secondf
-    if [ ! -d "${secondf}" ]; then
+    if [ ! -d ${secondf} ]; then
         echo -n "${secondf} Folder not found. Press Enter to continue..."
         read kk
         return
@@ -420,7 +420,7 @@ function compare {
 
         file1=$(echo "$line" | cut -d" " -f1)
         file2=$(echo "$line" | cut -d" " -f2)
-        if [[ -f "${file1}" && -f "${file2}" ]]
+        if [[ -f ${file1} && -f ${file2} ]]
         then
             MFILES=$((MFILES+1))
             lines_f1=$(wc -l ${file1} | cut -d" " -f1)
@@ -514,10 +514,10 @@ function frida_lib {
 
     OPTS=(arm64 arm64-v8a armeabi armeabi-v7a x86_64 x86)
 
-    if [ "$opt" -ge 1 -a "$opt" -le 6 ]; then
+    if [ $opt -ge 1 -a $opt -le 6 ]; then
         arch=${OPTS[$((opt-1))]}
 
-    elif [ "$opt" -eq 7 ]; then
+    elif [ $opt -eq 7 ]; then
         echo -n "Trying to extract the info from ADB... "
         arch=$(${ADB} shell "getprop ro.product.cpu.abi" | tr -d '\r')
         brand=$(${ADB} shell "getprop ro.product.brand" | tr -d '\r')
@@ -538,7 +538,7 @@ function frida_lib {
         checkfile "${APK}"
 
         package=$(aapt dump badging ${APK} |grep "^package: name=" |cut -f 2 -d "'")
-        if [ -z "$package" ]; then
+        if [ -z $package ]; then
             echo "---> ERROR: Can't get package name from APK"
             read kk
             return
@@ -546,7 +546,7 @@ function frida_lib {
         echo -e "\n---> Package: ${package}"
 
         launchable_activity=$(aapt dump badging ${APK}  |grep "^launchable-activity: name=" |cut -f 2 -d "'")
-        if [ -z "$launchable_activity" ]; then
+        if [ -z $launchable_activity ]; then
             echo "---> ERROR: Can't get main activity"
             read kk
             return
@@ -568,9 +568,9 @@ function frida_lib {
         fi
 
         activity_path=$(echo ${launchable_activity} |sed -e "s:\.:/:g")
-        file_to_patch="${APK_DIR}/smali/${activity_path}.smali"
+        file_to_patch=${APK_DIR}/smali/${activity_path}.smali
 
-        if [ ! -f "${file_to_patch}" ]; then
+        if [ ! -f ${file_to_patch} ]; then
             echo "---> ERROR: Can't find file ${file_to_patch}"
             read kk
             return
@@ -628,7 +628,7 @@ EOF
 
         case "$resp" in
         [yY])
-            adb shell "am start -n ${package}/${launchable_activity}"
+            adb shell am start -n ${package}/${launchable_activity}
             sleep 2
             ${MYSHELL} -e "frida -U Gadget" &
             ;;
