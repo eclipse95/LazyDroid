@@ -24,7 +24,7 @@ YEL='\033[0;33m'
 GREEN='\033[0;32m'
 
 function checkfile {
-    if [ ! -f "${1}" ]
+    if [ ! -f ${1} ]
     then
         echo "${1} not found!. Press Enter to continue"
         read kk
@@ -42,7 +42,7 @@ function sign {
     echo "---> Signing ${APK}..."
     cp ${APK_FULL_PATH} ${NEW_APK}
     $JARSIGNER -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore $KEYSTORE ${NEW_APK} $KEYALIAS > /dev/null
-    if [ $? -eq "0" ]
+    if [ $? -eq 0 ]
     then
         echo -e "---> ${NEW_APK} Created and signed sucessfully\n"
         install ${NEW_APK}
@@ -56,14 +56,14 @@ function sign {
 function sign2 {
     echo -n "- Enter apk: "
     read APK_FULL_PATH
-    checkfile "${APK_FULL_PATH}"
-    sign "${APK_FULL_PATH}"
+    checkfile ${APK_FULL_PATH}
+    sign ${APK_FULL_PATH}
 }
 
 function install {
     echo -n "Do you want to install $(basename ${1})? [y/n] "
     read kk
-    case "$kk" in
+    case $kk in
     [yY])
         echo ""
         ${ADB} install -r ${1}
@@ -76,7 +76,7 @@ esac
 }
 
 function build {
-    if [ ! -d "${1}" ];
+    if [ ! -d ${1} ];
     then
         echo "- \"${1}\" directory not found!"
     else
@@ -87,7 +87,7 @@ function build {
             echo "---> DONE"
             echo -n "Do you want to delete the \"${1}\" folder? [y/n] "
             read kk
-            case "$kk" in
+            case $kk in
             [yY])
                 rm -r ${1}
                 echo -n "Folder deleted! Press Enter to continue... "
@@ -105,14 +105,14 @@ function build {
 function build2 {
     echo -n "- Enter app folder to build: "
     read PATH_build
-    build "${PATH_build}" "${PATH_build}.apk"
+    build ${PATH_build} ${PATH_build}.apk
 }
 
 function set_something {
     value=$1
     echo -n "- Enter apk: "
     read APK_FULL_PATH
-    checkfile "$APK_FULL_PATH"
+    checkfile $APK_FULL_PATH
 
     APK=$(basename $APK_FULL_PATH)
     APK_PATH=$(dirname $APK_FULL_PATH)
@@ -146,14 +146,14 @@ function set_something {
             echo "---> ${value}=\"false\" Found"
             echo "---> Changing value to true"
 
-            if [ "${value}" == "debuggable" ]
+            if [ ${value} == "debuggable" ]
             then
                 sed -i 's/debuggable="false"/debuggable="true"/g' AndroidManifest.xml
             else
                 sed -i 's/allowBackup="false"/allowBackup="true"/g' AndroidManifest.xml
             fi
 
-            if [ $? -eq "0" ]
+            if [ $? -eq 0 ]
             then
                 echo "---> Flag ${value}=true was changed successfully"
                 cd ..
@@ -163,7 +163,7 @@ function set_something {
             fi
         else
             echo "---> The ${value} flag was not found"
-            if [ "${value}" == "debuggable" ]
+            if [ ${value} == "debuggable" ]
             then
                 sed -i 's/<application/<application android:debuggable="true"/g' AndroidManifest.xml
             else
@@ -174,7 +174,7 @@ function set_something {
                 then
                     echo "---> Flag ${value}=true was added successfully"
                     cd ..
-                    build "${APK_DIR}" "${APK_PATH}/${APK_DIR}_${value}.apk"
+                    build ${APK_DIR} ${APK_PATH}/${APK_DIR}_${value}.apk
                 else
                     echo "---> Something was wrong trying to add the flag ${value}. Press Enter to continue"
                 fi
@@ -192,14 +192,14 @@ function smartLog {
     DATE=$(date +"%Y%m%d%H%M%S")
     FOLDER=$PWD
 
-    if [ $PIDS = "0" ]
+    if [ $PIDS = 0 ]
     then
         echo "Package not found"
         read kk
     else
-        if [ "$PIDS" -gt "0" ]
+        if [ $PIDS -gt 0 ]
         then
-            if [ "${PIDS}" -gt "1" ]
+            if [ ${PIDS} -gt 1 ]
             then
                 echo -e "\n PID     Package Name"
                 cat /tmp/pids | awk '{print $2 "   " $9}'
@@ -224,7 +224,7 @@ function smartLog {
 
                 fi
             else
-                PIDD_="$(cat /tmp/pids | awk '{print $2}')"
+                PIDD_=$(cat /tmp/pids | awk '{print $2}')
                 packageName=$(cat /tmp/pids | grep ${PIDD_} | awk '{print $9}'| tr -d '\r')
                 echo "Log stored on '${FOLDER}/${packageName}_${DATE}.log'"
                 echo -n "Press Enter to continue... "
@@ -323,7 +323,7 @@ function getSnapshot {
         echo -ne "\nSelect the Package to get the snapshot: "
         read app
         grep -w ${app} ${APPS} > /dev/null
-        if [ $? -eq "1" ]
+        if [ $? -eq 1 ]
         then
             rm ${APPS}
             echo "Package not found. Press Enter to continue..."
@@ -337,7 +337,7 @@ function getSnapshot {
             DATE=$(date +"%Y%m%d%H%M%S")
             mv ${app} ${app}_${DATE}
 
-            if [ $? -eq "0" ]
+            if [ $? -eq 0 ]
             then
                 echo "App data downloaded sucessfully"
                 echo "Folder ${app}_${DATE} created sucessfully."
@@ -354,7 +354,7 @@ function getSnapshot {
         ${ADB} pull /sdcard/ . > /dev/null
         DATE=$(date +"%Y%m%d%H%M%S")
         mv sdcard sdcard_${DATE}
-        if [ $? -eq "0" ]
+        if [ $? -eq 0 ]
         then
             echo -e "---> Folder sdcard_${DATE} created sucessfully.\n"
             echo -n "Press Enter to continue... "
@@ -440,7 +440,7 @@ function compare {
             echo "[1] ${file2} (${lines_f2} lines) (size ${size_f2})"
             echo -e "[x] File Type: $(file ${file1} | cut -d" " -f2,3,4,5,6,7,8,9,10,11,12)\n"
         else
-            if [ -f "${file1}" ]
+            if [ -f ${file1} ]
             then
                 DFILES=$((DFILES+1))
                 lines_f1=$(wc -l ${file1} | cut -d" " -f1)
@@ -453,7 +453,7 @@ function compare {
                 echo "[0] ${file1} (${lines_f1} lines) (size ${size_f1})"
                 echo -e "[x] File Type: $(file ${file1} | cut -d" " -f2,3,4,5,6,7,8,9,10,11,12)\n"
             else
-                if [ -f "${file2}" ]
+                if [ -f ${file2} ]
                 then
                     NFILES=$((NFILES+1))
                     lines_f2=$(wc -l ${file2} | cut -d" " -f1)
@@ -479,7 +479,7 @@ function compare {
     echo -e "Total Changes: ${COUNTER}\n\n"
     echo "- Created Folders -"
     while read line; do
-        file "$line" | grep ": directory" | cut -d":" -f1
+        file $line | grep ": directory" | cut -d":" -f1
     done < /tmp/tocheck
 
     rm /tmp/different
@@ -493,7 +493,7 @@ function compare {
 function frida_lib {
     #FIXME: realpath command does not exist by default
     A=`dirname $(realpath $0)`
-    if [ ! -d "${A}/frida_libs" ]; then
+    if [ ! -d ${A}/frida_libs ]; then
         echo "frida_libs Folder not found. Please execute getfridalibs.sh and come back"
         echo -n "Press Enter to continue..."
         read kk
@@ -531,11 +531,11 @@ function frida_lib {
 
     echo -n "Architecture: ${arch}. Is it correct? [y/n] "
     read kk
-    case "$kk" in
+    case $kk in
     [yY])
         echo -n "Select the APK to inject the frida gadget: "
         read APK
-        checkfile "${APK}"
+        checkfile ${APK}
 
         package=$(aapt dump badging ${APK} |grep "^package: name=" |cut -f 2 -d "'")
         if [ -z $package ]; then
@@ -579,7 +579,7 @@ function frida_lib {
         echo "---> Patching ${file_to_patch}"
 
         line=$(cat ${file_to_patch} |grep -n "^# .*methods$" |head -n 1 |cut -f 1 -d ":")
-        if [ -z "$line" ]; then
+        if [ -z $line ]; then
             echo "ERROR: Can't find line to patch"
             read kk
 	    return
@@ -611,22 +611,22 @@ EOF
         echo " DONE"
         echo ""
 
-        build "${APK_DIR}" "${APK_DIR}_frida.apk"
+        build ${APK_DIR} ${APK_DIR}_frida.apk
 
-        if [ ! -f "${APK_DIR}_frida.apk" ]; then
+        if [ ! -f ${APK_DIR}_frida.apk ]; then
             echo "---> ERROR: failed to rebuild the patched APK"
             read kk
             return
         fi
         echo "---> Patched APK: ${APK_DIR}_frida.apk"
 
-        sign "${APK_DIR}_frida.apk"
+        sign ${APK_DIR}_frida.apk
 
         echo -e "\n---> Now execute the APK and run 'frida -U Gadget' or ..."
         echo -n "Do you want to launch the app and the frida agent? [y/n] "
         read resp
 
-        case "$resp" in
+        case $resp in
         [yY])
             adb shell am start -n ${package}/${launchable_activity}
             sleep 2
